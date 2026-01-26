@@ -1,1 +1,307 @@
-# general-store
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>🛒 Chauhan Store</title>
+
+<style>
+:root{
+  --bg:#f4f8ff;
+  --card:#fff;
+  --text:#0b5ed7;
+}
+.dark{
+  --bg:#121212;
+  --card:#1e1e1e;
+  --text:#4dabff;
+}
+body{
+  margin:0;
+  font-family:Arial;
+  background:var(--bg);
+  color:var(--text);
+}
+.page{
+  display:none;
+  opacity:0;
+  transform:translateX(30px);
+  transition:.4s;
+  padding:15px;
+}
+.page.active{
+  display:block;
+  opacity:1;
+  transform:translateX(0);
+}
+.box,.product{
+  background:var(--card);
+  padding:15px;
+  margin:10px 0;
+  border-radius:12px;
+}
+.product img{
+  width:100%;
+  height:150px;
+  object-fit:cover;
+  border-radius:10px;
+}
+button{
+  background:#0b5ed7;
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  margin:4px;
+}
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+}
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  display:flex;
+  background:#0b5ed7;
+}
+nav button{flex:1;background:none;color:#fff}
+</style>
+</head>
+
+<body>
+
+<button onclick="toggleDark()" style="position:fixed;top:10px;right:10px">🌙</button>
+
+<!-- SHOP -->
+<div id="shop" class="page active">
+<h2>🛒 Chauhan Store</h2>
+
+<input id="search" placeholder="Search..." onkeyup="render()">
+
+<div class="box">
+<button onclick="filterCat('All')">All</button>
+<button onclick="filterCat('Grocery')">Grocery</button>
+<button onclick="filterCat('Stationery')">Stationery</button>
+<button onclick="filterCat('Milk')">Milk</button>
+</div>
+
+<div id="products"></div>
+</div>
+
+<!-- CART -->
+<div id="cartPage" class="page">
+<h2>🛍 Cart</h2>
+<div id="cart"></div>
+<b>Total ₹<span id="total">0</span></b>
+
+<div class="box">
+<h3>Delivery</h3>
+<input id="custName" placeholder="Name">
+<input id="custMobile" placeholder="Mobile">
+<textarea id="custAddress" placeholder="Address"></textarea>
+<button onclick="placeOrder()">Place Order</button>
+</div>
+</div>
+
+<!-- ORDERS -->
+<div id="ordersPage" class="page">
+<h2>📜 My Orders</h2>
+<div id="orders"></div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="loginPage" class="page">
+<h2>Admin Login</h2>
+<input id="u" placeholder="Username">
+<input id="p" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPage" class="page">
+<h2>🧑‍💼 Admin Panel</h2>
+
+<input id="name" placeholder="Product name">
+<input id="price" placeholder="Price">
+<input id="img" placeholder="Image URL">
+<select id="cat">
+  <option>Grocery</option>
+  <option>Stationery</option>
+  <option>Milk</option>
+</select>
+<button onclick="addProduct()">Add Product</button>
+
+<h3>Products</h3>
+<div id="plist"></div>
+
+<h3>Orders</h3>
+<div id="adminOrders"></div>
+
+<button onclick="logout()">Logout</button>
+</div>
+
+<nav>
+<button onclick="show(shop)">🏪</button>
+<button onclick="show(cartPage)">🛍</button>
+<button onclick="show(ordersPage);showOrders()">📜</button>
+<button onclick="show(loginPage)">🔐</button>
+</nav>
+
+<script>
+let products = JSON.parse(localStorage.getItem("products")) || [
+ {id:1,name:"Rice",price:60,category:"Grocery",img:"https://i.imgur.com/2DhF5ZC.jpg"},
+ {id:2,name:"Pen",price:10,category:"Stationery",img:"https://i.imgur.com/6IUbEME.jpg"},
+ {id:3,name:"Milk 1L",price:60,category:"Milk",img:"https://i.imgur.com/V0R4QKk.jpg"}
+];
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let orders = JSON.parse(localStorage.getItem("orders")) || [];
+let customer = JSON.parse(localStorage.getItem("customer")) || {};
+let currentCat="All", isAdmin=false;
+
+const productsDiv=document.getElementById("products");
+const cartDiv=document.getElementById("cart");
+const total=document.getElementById("total");
+const ordersDiv=document.getElementById("orders");
+
+function show(p){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ p.classList.add("active");
+}
+
+function filterCat(c){currentCat=c;render();}
+
+function render(){
+ productsDiv.innerHTML=products.filter(p=>
+  (currentCat=="All"||p.category==currentCat)
+ ).map(p=>`
+ <div class="product">
+   <img src="${p.img}">
+   <b>${p.name}</b><br>
+   ₹${p.price}<br>
+   <button onclick="add(${p.id})">Add</button>
+ </div>`).join("");
+ showCart();
+}
+render();
+
+/* CART */
+function add(id){
+ let p=products.find(x=>x.id==id);
+ let c=cart.find(x=>x.id==id);
+ c?c.qty++:cart.push({...p,qty:1});
+ saveCart();
+}
+function qty(id,d){
+ let c=cart.find(x=>x.id==id);
+ c.qty+=d;
+ if(c.qty<=0) cart=cart.filter(x=>x.id!=id);
+ saveCart();
+}
+function saveCart(){
+ localStorage.setItem("cart",JSON.stringify(cart));
+ showCart();
+}
+function showCart(){
+ let t=0,h="";
+ cart.forEach(i=>{
+  t+=i.price*i.qty;
+  h+=`
+  <div class="box">
+    <img src="${i.img}" style="width:80px"><br>
+    ${i.name}<br>
+    <button onclick="qty(${i.id},-1)">➖</button>
+    ${i.qty}
+    <button onclick="qty(${i.id},1)">➕</button>
+  </div>`;
+ });
+ cartDiv.innerHTML=h||"Cart Empty";
+ total.innerText=t;
+}
+
+/* ORDER */
+custName.value=customer.name||"";
+custMobile.value=customer.mobile||"";
+custAddress.value=customer.address||"";
+
+function placeOrder(){
+ customer={name:custName.value,mobile:custMobile.value,address:custAddress.value};
+ localStorage.setItem("customer",JSON.stringify(customer));
+ orders.push({id:Date.now(),items:[...cart],total:total.innerText,...customer,status:"Pending"});
+ localStorage.setItem("orders",JSON.stringify(orders));
+ cart=[];saveCart();
+ alert("Order Placed");
+ showOrders();show(ordersPage);
+}
+
+function showOrders(){
+ ordersDiv.innerHTML=orders.map(o=>`
+ <div class="box">
+  <b>${o.name}</b><br>
+  ₹${o.total}<br>
+  ${o.items.map(i=>`${i.name} x ${i.qty}`).join("<br>")}
+ </div>`).join("") || "No orders";
+}
+
+/* ADMIN LOGIN */
+function login(){
+ if(u.value=="Museb" && p.value=="Museb09876"){
+  isAdmin=true;
+  show(adminPage);
+  showAdmin();
+ }else alert("Wrong login");
+}
+function logout(){isAdmin=false;show(shop);}
+
+/* ADD PRODUCT */
+function addProduct(){
+ products.push({
+  id:Date.now(),
+  name:name.value,
+  price:+price.value,
+  img:img.value,
+  category:cat.value
+ });
+ localStorage.setItem("products",JSON.stringify(products));
+ render();
+ showAdmin();
+}
+
+function del(id){
+ products=products.filter(p=>p.id!=id);
+ localStorage.setItem("products",JSON.stringify(products));
+ render();
+ showAdmin();
+}
+
+/* ✅ NEW ADMIN VIEW */
+function showAdmin(){
+  plist.innerHTML = products.map(p => `
+    <div class="box">
+      <img src="${p.img}" style="width:100px;height:80px;object-fit:cover;border-radius:8px"><br><br>
+      <b>Name:</b> ${p.name}<br>
+      <b>Price:</b> ₹${p.price}<br>
+      <b>Category:</b> ${p.category}<br>
+      <b>Image URL:</b><br>
+      <small style="word-break:break-all">${p.img}</small><br><br>
+      <button onclick="del(${p.id})">❌ Delete</button>
+    </div>
+  `).join("") || "No products";
+
+  adminOrders.innerHTML = orders.map(o => `
+    <div class="box">
+      <b>${o.name}</b><br>
+      ₹${o.total}<br>
+      Status: <b>${o.status}</b>
+    </div>
+  `).join("") || "No orders";
+}
+
+function toggleDark(){document.body.classList.toggle("dark");}
+</script>
+
+</body>
+</html>
