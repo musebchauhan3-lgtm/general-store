@@ -1,307 +1,378 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>🛒 Chauhan Store</title>
+<title>Danis ProSell Market</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 :root{
-  --bg:#f4f8ff;
-  --card:#fff;
-  --text:#0b5ed7;
+  --purple:#6a11cb;
+  --blue:#2575fc;
+  --bg:#f4f6fb;
+  --card:#ffffff;
 }
-.dark{
-  --bg:#121212;
-  --card:#1e1e1e;
-  --text:#4dabff;
+body{margin:0;font-family:Segoe UI,Arial;background:var(--bg);}
+header{
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  color:#fff;padding:15px;text-align:center;
 }
-body{
-  margin:0;
-  font-family:Arial;
-  background:var(--bg);
-  color:var(--text);
+nav button{
+  margin:5px;padding:10px 15px;
+  border:none;border-radius:20px;
+  cursor:pointer;
 }
-.page{
-  display:none;
-  opacity:0;
-  transform:translateX(30px);
-  transition:.4s;
-  padding:15px;
-}
-.page.active{
-  display:block;
-  opacity:1;
-  transform:translateX(0);
-}
-.box,.product{
+section{display:none;padding:15px;}
+.active{display:block;}
+.card{
   background:var(--card);
-  padding:15px;
-  margin:10px 0;
+  padding:15px;border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,.1);
+  margin-bottom:15px;
+}
+input, textarea{
+  width:100%;padding:10px;margin:5px 0;
+  border-radius:8px;border:1px solid #ccc;
+}
+button.action{
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  color:#fff;padding:8px 12px;
+  border:none;border-radius:8px;cursor:pointer;
+}
+.order{
+  background:#eef0ff;padding:10px;
+  border-radius:8px;margin:10px 0;
+}
+.danger{
+  background:#ff4d4d;color:#fff;border:none;
+  padding:6px 10px;border-radius:8px;cursor:pointer;
+}
+canvas{
+  background:#fff;
   border-radius:12px;
-}
-.product img{
-  width:100%;
-  height:150px;
-  object-fit:cover;
-  border-radius:10px;
-}
-button{
-  background:#0b5ed7;
-  color:#fff;
-  border:none;
-  padding:8px 12px;
-  border-radius:8px;
-  margin:4px;
-}
-input,select,textarea{
-  width:100%;
   padding:10px;
-  margin:6px 0;
-  border-radius:8px;
+  box-shadow:0 5px 15px rgba(0,0,0,.1);
 }
-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  display:flex;
-  background:#0b5ed7;
-}
-nav button{flex:1;background:none;color:#fff}
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<button onclick="toggleDark()" style="position:fixed;top:10px;right:10px">🌙</button>
-
-<!-- SHOP -->
-<div id="shop" class="page active">
-<h2>🛒 Chauhan Store</h2>
-
-<input id="search" placeholder="Search..." onkeyup="render()">
-
-<div class="box">
-<button onclick="filterCat('All')">All</button>
-<button onclick="filterCat('Grocery')">Grocery</button>
-<button onclick="filterCat('Stationery')">Stationery</button>
-<button onclick="filterCat('Milk')">Milk</button>
-</div>
-
-<div id="products"></div>
-</div>
-
-<!-- CART -->
-<div id="cartPage" class="page">
-<h2>🛍 Cart</h2>
-<div id="cart"></div>
-<b>Total ₹<span id="total">0</span></b>
-
-<div class="box">
-<h3>Delivery</h3>
-<input id="custName" placeholder="Name">
-<input id="custMobile" placeholder="Mobile">
-<textarea id="custAddress" placeholder="Address"></textarea>
-<button onclick="placeOrder()">Place Order</button>
-</div>
-</div>
-
-<!-- ORDERS -->
-<div id="ordersPage" class="page">
-<h2>📜 My Orders</h2>
-<div id="orders"></div>
-</div>
-
-<!-- ADMIN LOGIN -->
-<div id="loginPage" class="page">
-<h2>Admin Login</h2>
-<input id="u" placeholder="Username">
-<input id="p" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-</div>
-
-<!-- ADMIN PANEL -->
-<div id="adminPage" class="page">
-<h2>🧑‍💼 Admin Panel</h2>
-
-<input id="name" placeholder="Product name">
-<input id="price" placeholder="Price">
-<input id="img" placeholder="Image URL">
-<select id="cat">
-  <option>Grocery</option>
-  <option>Stationery</option>
-  <option>Milk</option>
-</select>
-<button onclick="addProduct()">Add Product</button>
-
-<h3>Products</h3>
-<div id="plist"></div>
-
-<h3>Orders</h3>
-<div id="adminOrders"></div>
-
-<button onclick="logout()">Logout</button>
-</div>
-
+<header>
+<h1>🛒 Danis ProSell Market</h1>
 <nav>
-<button onclick="show(shop)">🏪</button>
-<button onclick="show(cartPage)">🛍</button>
-<button onclick="show(ordersPage);showOrders()">📜</button>
-<button onclick="show(loginPage)">🔐</button>
+<button onclick="show('customer')">Customer</button>
+<button onclick="show('seller')">Seller</button>
+<button onclick="show('admin')">Admin</button>
 </nav>
+</header>
+
+<!-- CUSTOMER -->
+<section id="customer" class="active">
+<h2>Customer Shop</h2>
+<div id="products"></div>
+
+<div class="card">
+<h3>🛒 Cart</h3>
+<div id="cart"></div>
+<div id="cartTotal"></div>
+
+<input id="cname" placeholder="Customer Name">
+<input id="cphone" placeholder="Phone Number">
+<textarea id="caddress" placeholder="Address"></textarea>
+<button class="action" onclick="placeOrder()">Place Order</button>
+</div>
+
+<div class="card">
+<h3>📦 My Orders</h3>
+<input id="searchPhone" placeholder="Enter Phone to See Orders">
+<button class="action" onclick="renderCustomerOrders()">Show My Orders</button>
+<div id="customerOrders"></div>
+</div>
+</section>
+
+<!-- SELLER -->
+<section id="seller">
+<h2>Seller Panel</h2>
+
+<div class="card">
+<h3>📊 Today Sales Total</h3>
+<div id="sellerSales"></div>
+</div>
+
+<div class="card">
+<h3>📅 Monthly Sales Total</h3>
+<div id="sellerMonthRange"></div>
+<div id="sellerMonthSales"></div>
+</div>
+
+<div class="card">
+<h3>Add Product</h3>
+<input id="pname" placeholder="Product Name">
+<input id="pprice" placeholder="Price">
+<textarea id="pdesc" placeholder="Description"></textarea>
+<button class="action" onclick="addProduct()">Add Product</button>
+</div>
+
+<div class="card">
+<h3>Your Products</h3>
+<div id="sellerProducts"></div>
+</div>
+
+<div class="card">
+<h3>Orders</h3>
+<div id="sellerOrders"></div>
+</div>
+
+<div class="card">
+<h3>📅 Custom Date Sales</h3>
+From: <input type="date" id="sellerFrom">
+To: <input type="date" id="sellerTo">
+<button class="action" onclick="sellerFilter()">Check</button>
+<div id="sellerFilterTotal"></div>
+</div>
+
+<div class="card">
+<h3>📈 Sales Graph</h3>
+<button class="action" onclick="drawGraph(7)">Last 7 Days</button>
+<button class="action" onclick="drawGraph(30)">Last 30 Days</button>
+<canvas id="sellerChart" width="400" height="200"></canvas>
+</div>
+</section>
+
+<!-- ADMIN -->
+<section id="admin">
+<h2>Admin Panel</h2>
+
+<div class="card">
+<h3>📊 Today Sales Total</h3>
+<div id="adminSales"></div>
+</div>
+
+<div class="card">
+<h3>📅 Monthly Sales Total</h3>
+<div id="adminMonthRange"></div>
+<div id="adminMonthSales"></div>
+</div>
+
+<div class="card">
+<h3>All Orders</h3>
+<button class="danger" onclick="clearAllOrders()">🗑 Delete All Orders</button>
+<button class="action" onclick="downloadExcel()">⬇ Download Excel</button>
+<div id="adminOrders"></div>
+</div>
+
+<div class="card">
+<h3>📅 Custom Date Sales</h3>
+From: <input type="date" id="adminFrom">
+To: <input type="date" id="adminTo">
+<button class="action" onclick="adminFilter()">Check</button>
+<button class="action" onclick="downloadExcelFiltered(adminFrom.value,adminTo.value)">⬇ Filter Excel</button>
+<div id="adminFilterTotal"></div>
+</div>
+
+<div class="card">
+<h3>📈 Sales Graph</h3>
+<button class="action" onclick="drawGraphAdmin(7)">Last 7 Days</button>
+<button class="action" onclick="drawGraphAdmin(30)">Last 30 Days</button>
+<canvas id="adminChart" width="400" height="200"></canvas>
+</div>
+</section>
 
 <script>
-let products = JSON.parse(localStorage.getItem("products")) || [
- {id:1,name:"Rice",price:60,category:"Grocery",img:"https://i.imgur.com/2DhF5ZC.jpg"},
- {id:2,name:"Pen",price:10,category:"Stationery",img:"https://i.imgur.com/6IUbEME.jpg"},
- {id:3,name:"Milk 1L",price:60,category:"Milk",img:"https://i.imgur.com/V0R4QKk.jpg"}
-];
+const productsDiv = document.getElementById("products");
+const cartDiv = document.getElementById("cart");
+const cartTotalDiv = document.getElementById("cartTotal");
+const sellerProducts = document.getElementById("sellerProducts");
+const sellerOrders = document.getElementById("sellerOrders");
+const adminOrders = document.getElementById("adminOrders");
+const customerOrdersDiv = document.getElementById("customerOrders");
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let orders = JSON.parse(localStorage.getItem("orders")) || [];
-let customer = JSON.parse(localStorage.getItem("customer")) || {};
-let currentCat="All", isAdmin=false;
+let products = JSON.parse(localStorage.getItem("products")||"[]");
+let orders = JSON.parse(localStorage.getItem("orders")||"[]");
+let cart = [];
+let sellerChart, adminChart;
 
-const productsDiv=document.getElementById("products");
-const cartDiv=document.getElementById("cart");
-const total=document.getElementById("total");
-const ordersDiv=document.getElementById("orders");
-
-function show(p){
- document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
- p.classList.add("active");
+function show(id){
+  if(id === "seller" && prompt("Enter Seller Password")!=="Danis12345") return alert("Wrong Seller Password");
+  if(id === "admin" && prompt("Enter Admin Password")!=="Museb98765") return alert("Wrong Admin Password");
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  render();
 }
 
-function filterCat(c){currentCat=c;render();}
+function save(){
+  localStorage.setItem("products",JSON.stringify(products));
+  localStorage.setItem("orders",JSON.stringify(orders));
+}
+
+function addProduct(){
+  products.push({id:Date.now(),name:pname.value,price:Number(pprice.value),desc:pdesc.value});
+  pname.value=pprice.value=pdesc.value="";
+  save(); render();
+}
+
+function getTodaySales(){
+  let today = new Date().toDateString(), total=0;
+  orders.forEach(o=>{
+    if(new Date(o.date).toDateString()===today && o.status==="Completed")
+      o.items.forEach(i=>total+=i.price*i.qty);
+  });
+  return total;
+}
+
+function getMonthSales(){
+  const now=new Date(); let total=0;
+  orders.forEach(o=>{
+    const d=new Date(o.date);
+    if(d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear() && o.status==="Completed")
+      o.items.forEach(i=>total+=i.price*i.qty);
+  });
+  return total;
+}
+
+function getMonthRangeText(){
+  const now=new Date();
+  const start=new Date(now.getFullYear(),now.getMonth(),1);
+  const opt={day:"2-digit",month:"short",year:"numeric"};
+  return start.toLocaleDateString("en-IN",opt) + " — " + now.toLocaleDateString("en-IN",opt);
+}
+
+function getRangeSales(from,to){
+  if(!from || !to) return 0;
+  const f=new Date(from), t=new Date(to); t.setHours(23,59,59,999); let total=0;
+  orders.forEach(o=>{
+    const d=new Date(o.date);
+    if(d>=f && d<=t && o.status==="Completed")
+      o.items.forEach(i=>total+=i.price*i.qty);
+  });
+  return total;
+}
+
+function sellerFilter(){
+  const from=sellerFrom.value, to=sellerTo.value;
+  document.getElementById("sellerFilterTotal").innerHTML="Total Sales: ₹ " + getRangeSales(from,to);
+}
+
+function adminFilter(){
+  const from=adminFrom.value, to=adminTo.value;
+  document.getElementById("adminFilterTotal").innerHTML="Total Sales: ₹ " + getRangeSales(from,to);
+}
 
 function render(){
- productsDiv.innerHTML=products.filter(p=>
-  (currentCat=="All"||p.category==currentCat)
- ).map(p=>`
- <div class="product">
-   <img src="${p.img}">
-   <b>${p.name}</b><br>
-   ₹${p.price}<br>
-   <button onclick="add(${p.id})">Add</button>
- </div>`).join("");
- showCart();
+  // Products
+  productsDiv.innerHTML=""; products.forEach(p=>{
+    productsDiv.innerHTML+=`<div class="card"><b>${p.name}</b><br>₹${p.price}<br>${p.desc}<br><button class="action" onclick="addToCart(${p.id})">Add to Cart</button></div>`;
+  });
+
+  // Cart
+  let total=0; cartDiv.innerHTML="";
+  cart.forEach(c=>{
+    total+=c.price*c.qty;
+    cartDiv.innerHTML+=`<div class="card">${c.name} ₹${c.price} × ${c.qty}<button onclick="qty(${c.id},-1)">−</button><button onclick="qty(${c.id},1)">+</button></div>`;
+  });
+  cartTotalDiv.innerHTML="Total ₹"+total;
+
+  // Seller Products
+  sellerProducts.innerHTML="";
+  products.forEach(p=>sellerProducts.innerHTML+=`${p.name} ₹${p.price}<button onclick="delProd(${p.id})">❌</button><br>`);
+
+  document.getElementById("sellerSales").innerHTML="₹ "+getTodaySales();
+  document.getElementById("adminSales").innerHTML="₹ "+getTodaySales();
+  document.getElementById("sellerMonthSales").innerHTML="₹ "+getMonthSales();
+  document.getElementById("adminMonthSales").innerHTML="₹ "+getMonthSales();
+  document.getElementById("sellerMonthRange").innerHTML="From: "+getMonthRangeText();
+  document.getElementById("adminMonthRange").innerHTML="From: "+getMonthRangeText();
+
+  sellerOrders.innerHTML=""; adminOrders.innerHTML="";
+  orders.forEach(o=>{
+    let items=o.items.map(i=>`${i.name} x${i.qty}`).join(", ");
+    let box=`<div class="order"><b>${o.name}</b> | ${o.phone}<br><b>Address:</b> ${o.address}<br><b>Items:</b> ${items}<br><b>Status:</b> ${o.status}<br><b>Date:</b> ${o.date}<br><button onclick="updateStatus(${o.id},'Completed')" class="action">✔ Complete</button><button onclick="updateStatus(${o.id},'Cancelled')" class="danger">❌ Cancel</button></div>`;
+    sellerOrders.innerHTML+=box; adminOrders.innerHTML+=box;
+  });
+
+  drawGraph(7);
+  drawGraphAdmin(7);
 }
+
+// GRAPH FUNCTIONS
+function getDailySales(days){
+  const labels=[], data=[];
+  for(let i=days-1;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    labels.push(d.toLocaleDateString("en-IN",{day:"2-digit",month:"short"}));
+    let total=0;
+    orders.forEach(o=>{
+      const od=new Date(o.date);
+      if(od.toDateString()===d.toDateString() && o.status==="Completed")
+        o.items.forEach(it=>total+=it.price*it.qty);
+    });
+    data.push(total);
+  }
+  return {labels,data};
+}
+
+function drawGraph(days){
+  const ctx=document.getElementById('sellerChart').getContext('2d');
+  const d=getDailySales(Number(days));
+  if(sellerChart) sellerChart.destroy();
+  sellerChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:d.labels,datasets:[{label:'Sales',data:d.data,fill:false,borderColor:'#2575fc',tension:0.3,pointBackgroundColor:'#2575fc',pointHoverRadius:7}]},
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:true},
+        tooltip:{
+          callbacks:{
+            label:function(ctx){return "₹ "+ctx.raw;},
+            title:function(ctx){return "Date: "+ctx[0].label;}
+          }
+        }
+      },
+      scales:{y:{ticks:{callback:function(v){return "₹ "+v;}}}}
+    }
+  });
+}
+
+function drawGraphAdmin(days){
+  const ctx=document.getElementById('adminChart').getContext('2d');
+  const d=getDailySales(Number(days));
+  if(adminChart) adminChart.destroy();
+  adminChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:d.labels,datasets:[{label:'Sales',data:d.data,fill:false,borderColor:'#6a11cb',tension:0.3,pointBackgroundColor:'#6a11cb',pointHoverRadius:7}]},
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:true},
+        tooltip:{
+          callbacks:{
+            label:function(ctx){return "₹ "+ctx.raw;},
+            title:function(ctx){return "Date: "+ctx[0].label;}
+          }
+        }
+      },
+      scales:{y:{ticks:{callback:function(v){return "₹ "+v;}}}}
+    }
+  });
+}
+
+// REST FUNCTIONS (unchanged)
+function downloadExcel(){let rows=[["ID","Date","Name","Phone","Address","Items","Total","Status"]];orders.forEach(o=>{let total=0;let items=o.items.map(i=>{total+=i.price*i.qty;return i.name+" x"+i.qty;}).join(" | ");rows.push([o.id,o.date,o.name,o.phone,o.address,items,total,o.status]);});let csv=rows.map(r=>r.join(",")).join("\n");let blob=new Blob([csv],{type:"text/csv"});let url=URL.createObjectURL(blob);let a=document.createElement("a");a.href=url;a.download="orders.csv";a.click();}
+function downloadExcelFiltered(from,to){if(!from||!to)return alert("Select dates");const f=new Date(from),t=new Date(to);t.setHours(23,59,59,999);let rows=[["ID","Date","Name","Phone","Address","Items","Total","Status"]];orders.forEach(o=>{const d=new Date(o.date);if(d>=f&&d<=t){let total=0;let items=o.items.map(i=>{total+=i.price*i.qty;return i.name+" x"+i.qty;}).join(" | ");rows.push([o.id,o.date,o.name,o.phone,o.address,items,total,o.status]);}});let csv=rows.map(r=>r.join(",")).join("\n");let blob=new Blob([csv],{type:"text/csv"});let url=URL.createObjectURL(blob);let a=document.createElement("a");a.href=url;a.download="filtered_orders.csv";a.click();}
+function addToCart(id){let p=products.find(x=>x.id===id);let c=cart.find(x=>x.id===id);c?c.qty++:cart.push({...p,qty:1});render();}
+function qty(id,v){let c=cart.find(x=>x.id===id);c.qty+=v;if(c.qty<=0) cart=cart.filter(x=>x.id!==id);render();}
+function placeOrder(){if(!cart.length)return alert("Cart empty");orders.push({id:Date.now(),name:cname.value,phone:cphone.value,address:caddress.value,date:new Date().toString(),items:JSON.parse(JSON.stringify(cart)),status:"Pending"});cart=[];cname.value=cphone.value=caddress.value="";save();render();alert("Order Placed");}
+function renderCustomerOrders(){const phone=searchPhone.value;customerOrdersDiv.innerHTML="";orders.filter(o=>o.phone===phone).forEach(o=>{let total=0;let items=o.items.map(i=>{total+=i.price*i.qty;return `${i.name} x${i.qty}`}).join(", ");customerOrdersDiv.innerHTML+=`<div class="order">Date:${o.date}<br>Items:${items}<br>Total:₹${total}<br>Status:<b>${o.status}</b><br>${o.status==="Pending"?`<button class="danger" onclick="cancelByCustomer(${o.id})">Cancel</button>`:""}</div>`});}
+function cancelByCustomer(id){orders.find(x=>x.id===id).status="Cancelled";save();renderCustomerOrders();render();}
+function updateStatus(id,status){orders.find(x=>x.id===id).status=status;save();render();}
+function delProd(id){products=products.filter(p=>p.id!==id);save();render();}
+function clearAllOrders(){orders=[];localStorage.removeItem("orders");save();render();}
+
 render();
-
-/* CART */
-function add(id){
- let p=products.find(x=>x.id==id);
- let c=cart.find(x=>x.id==id);
- c?c.qty++:cart.push({...p,qty:1});
- saveCart();
-}
-function qty(id,d){
- let c=cart.find(x=>x.id==id);
- c.qty+=d;
- if(c.qty<=0) cart=cart.filter(x=>x.id!=id);
- saveCart();
-}
-function saveCart(){
- localStorage.setItem("cart",JSON.stringify(cart));
- showCart();
-}
-function showCart(){
- let t=0,h="";
- cart.forEach(i=>{
-  t+=i.price*i.qty;
-  h+=`
-  <div class="box">
-    <img src="${i.img}" style="width:80px"><br>
-    ${i.name}<br>
-    <button onclick="qty(${i.id},-1)">➖</button>
-    ${i.qty}
-    <button onclick="qty(${i.id},1)">➕</button>
-  </div>`;
- });
- cartDiv.innerHTML=h||"Cart Empty";
- total.innerText=t;
-}
-
-/* ORDER */
-custName.value=customer.name||"";
-custMobile.value=customer.mobile||"";
-custAddress.value=customer.address||"";
-
-function placeOrder(){
- customer={name:custName.value,mobile:custMobile.value,address:custAddress.value};
- localStorage.setItem("customer",JSON.stringify(customer));
- orders.push({id:Date.now(),items:[...cart],total:total.innerText,...customer,status:"Pending"});
- localStorage.setItem("orders",JSON.stringify(orders));
- cart=[];saveCart();
- alert("Order Placed");
- showOrders();show(ordersPage);
-}
-
-function showOrders(){
- ordersDiv.innerHTML=orders.map(o=>`
- <div class="box">
-  <b>${o.name}</b><br>
-  ₹${o.total}<br>
-  ${o.items.map(i=>`${i.name} x ${i.qty}`).join("<br>")}
- </div>`).join("") || "No orders";
-}
-
-/* ADMIN LOGIN */
-function login(){
- if(u.value=="Museb" && p.value=="Museb09876"){
-  isAdmin=true;
-  show(adminPage);
-  showAdmin();
- }else alert("Wrong login");
-}
-function logout(){isAdmin=false;show(shop);}
-
-/* ADD PRODUCT */
-function addProduct(){
- products.push({
-  id:Date.now(),
-  name:name.value,
-  price:+price.value,
-  img:img.value,
-  category:cat.value
- });
- localStorage.setItem("products",JSON.stringify(products));
- render();
- showAdmin();
-}
-
-function del(id){
- products=products.filter(p=>p.id!=id);
- localStorage.setItem("products",JSON.stringify(products));
- render();
- showAdmin();
-}
-
-/* ✅ NEW ADMIN VIEW */
-function showAdmin(){
-  plist.innerHTML = products.map(p => `
-    <div class="box">
-      <img src="${p.img}" style="width:100px;height:80px;object-fit:cover;border-radius:8px"><br><br>
-      <b>Name:</b> ${p.name}<br>
-      <b>Price:</b> ₹${p.price}<br>
-      <b>Category:</b> ${p.category}<br>
-      <b>Image URL:</b><br>
-      <small style="word-break:break-all">${p.img}</small><br><br>
-      <button onclick="del(${p.id})">❌ Delete</button>
-    </div>
-  `).join("") || "No products";
-
-  adminOrders.innerHTML = orders.map(o => `
-    <div class="box">
-      <b>${o.name}</b><br>
-      ₹${o.total}<br>
-      Status: <b>${o.status}</b>
-    </div>
-  `).join("") || "No orders";
-}
-
-function toggleDark(){document.body.classList.toggle("dark");}
 </script>
-
 </body>
 </html>
